@@ -1,0 +1,275 @@
+{
+    "Name": "Ohio Airlines",
+    "Ohio Airlines": {
+        "name": "Ohio Airlines",
+        "permissions": [
+            {
+                "id": 1197655423621267516,
+                "permissions": {
+                    "allow": 0,
+                    "deny": 2048
+                }
+            }
+        ],
+        "channels": {
+            "rulebook": {
+                "name": "rulebook",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 0,
+                            "deny": 2048
+                        }
+                    }
+                ]
+            },
+            "ohio-announcements": {
+                "name": "ohio-announcements",
+                "type": "news",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 0,
+                            "deny": 2048
+                        }
+                    }
+                ]
+            },
+            "game-hosting": {
+                "name": "game-hosting",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 0,
+                            "deny": 2048
+                        }
+                    }
+                ]
+            },
+            "admin-chat": {
+                "name": "admin-chat",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 0,
+                            "deny": 1024
+                        }
+                    },
+                    {
+                        "id": 1251817366262644756,
+                        "permissions": {
+                            "allow": 1024,
+                            "deny": 0
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Text Channels": {
+        "name": "Text Channels",
+        "permissions": [
+            {
+                "id": 1197655423621267516,
+                "permissions": {
+                    "allow": 3073,
+                    "deny": 0
+                }
+            }
+        ],
+        "channels": {
+            "general1": {
+                "name": "general1",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 3073,
+                            "deny": 0
+                        }
+                    }
+                ]
+            },
+            "general2": {
+                "name": "general2",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 3073,
+                            "deny": 0
+                        }
+                    }
+                ]
+            },
+            "general3": {
+                "name": "general3",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 3073,
+                            "deny": 0
+                        }
+                    }
+                ]
+            },
+            "general4": {
+                "name": "general4",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 3073,
+                            "deny": 0
+                        }
+                    }
+                ]
+            },
+            "general5": {
+                "name": "general5",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 3073,
+                            "deny": 0
+                        }
+                    }
+                ]
+            },
+            "run-code": {
+                "name": "run-code",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 3073,
+                            "deny": 0
+                        }
+                    }
+                ]
+            },
+            "youtubers": {
+                "name": "youtubers",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 0,
+                            "deny": 1024
+                        }
+                    },
+                    {
+                        "id": 1252927639602331732,
+                        "permissions": {
+                            "allow": 1024,
+                            "deny": 0
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Voice Channels": {
+        "name": "Voice Channels",
+        "permissions": [
+            {
+                "id": 1198253186063007795,
+                "permissions": {
+                    "allow": 0,
+                    "deny": 1024
+                }
+            }
+        ],
+        "channels": {
+            "Music": {
+                "name": "Music",
+                "type": "voice",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 0,
+                            "deny": 2163200
+                        }
+                    },
+                    {
+                        "id": 1235775650158084139,
+                        "permissions": {
+                            "allow": 2097152,
+                            "deny": 0
+                        }
+                    }
+                ]
+            },
+            "VC": {
+                "name": "VC",
+                "type": "voice",
+                "permissions": [
+                    {
+                        "id": 1198253186063007795,
+                        "permissions": {
+                            "allow": 0,
+                            "deny": 1024
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "bot": {
+        "name": "bot",
+        "permissions": [
+            {
+                "id": 1197655423621267516,
+                "permissions": {
+                    "allow": 0,
+                    "deny": 1024
+                }
+            }
+        ],
+        "channels": {
+            "commands": {
+                "name": "commands",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 0,
+                            "deny": 1024
+                        }
+                    }
+                ]
+            },
+            "dyno-updates": {
+                "name": "dyno-updates",
+                "type": "text",
+                "permissions": [
+                    {
+                        "id": 1197655423621267516,
+                        "permissions": {
+                            "allow": 0,
+                            "deny": 1024
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
