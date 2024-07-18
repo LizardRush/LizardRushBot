@@ -2,7 +2,6 @@ import discord, shutil, os, time, aiohttp, random, asyncio, json, requests
 from pydub import AudioSegment
 from pydub.playback import play
 from datetime import datetime
-import requests
 import base64
 from github import Github
 
@@ -27,15 +26,17 @@ def post_file_to_github(repo_name, file_path, file_content, commit_message, toke
         # If file does not exist, create it
         repo.create_file(file_path, commit_message, file_content)
         print("File successfully created in GitHub.")
+
 intents = discord.Intents.all()
 intents.message_content = True
 intents.members = True
+
+client = discord.Client(intents=intents)
+
 handle = "https://raw.githubusercontent.com/LizardRush/LizardRushBot/main/"
 
-prefix = '!',
-doors_prefix = '#',
-client = discord.Client(command_prefix='!', intents=intents),
-
+prefix = '!'
+doors_prefix = '#'
 json_file = requests.get(f"{handle}config.json")
 if json_file.status_code == 200:
     json_file = json.loads(json_file.text)
@@ -57,14 +58,12 @@ class DiscordVoiceReceiver(discord.AudioSource):
         else:
             return b''
 
-
 async def join(ctx, user):
     """Joins the voice channel of the command issuer"""
     if user.voice:
         channel = user.voice.channel
         await channel.connect()
         await ctx.send(f"Joined {channel}")
-        
     else:
         await ctx.send("You are not connected to a voice channel.")
 
@@ -113,6 +112,7 @@ async def say_as(channel=None, identity="", avatar_url="https://cdn.discordapp.c
 
     # Delete the webhook
     await webhook.delete()
+
 async def make_http_request(ctx, method, url):
     async with aiohttp.ClientSession() as session:
         async with getattr(session, method.lower())(url) as response:
@@ -123,11 +123,12 @@ async def make_http_request(ctx, method, url):
                 status_message += f"\nResponse Content:\n```{content}```"
 
             await ctx.send(status_message)
+
 class console:
     @staticmethod
     async def clear():
         os.system('cls' if os.name == 'nt' else 'clear')
-            
+
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.dnd)
@@ -142,28 +143,30 @@ async def on_ready():
     for file in dirlist:
         shutil.move(f'__pycache__/{file}', f'ohio/cache/{file}')
     os.rmdir('__pycache__')
+
 async def generate_stats(user, ctx):
-    if not user.bot and requests.get(f"{handle}/stats/{user.id}_stats.json") != 200 and requests.get(f"{handle}/stats/{user.id}_stats.json") != 201:
-            post_file_to_github(
-                "LizardRushBot",
-                f"stats/{user.id}_stats.json",
-                json.dumps({
-                    "Name": user.name,
-                    "ID": user.id,
-                    "Can_Restore": False,
-                    "Coins": 0,
-                    "Warnings": 0,
-                },
-                indent=4),
-                f"Generated Stats For {user.display_name}",
-            )
-            if ctx:
-                await ctx.send(f'Created stats for {user.display_name}')
+    if not user.bot and requests.get(f"{handle}/stats/{user.id}_stats.json") not in [200, 201]:
+        post_file_to_github(
+            "LizardRushBot",
+            f"stats/{user.id}_stats.json",
+            json.dumps({
+                "Name": user.name,
+                "ID": user.id,
+                "Can_Restore": False,
+                "Coins": 0,
+                "Warnings": 0,
+            },
+            indent=4),
+            f"Generated Stats For {user.display_name}",
+        )
+        if ctx:
+            await ctx.send(f'Created stats for {user.display_name}')
     else:
         await ctx.send(f'User is a bot: {user.display_name}')
+
 async def get_stats(user):
     stats = requests.get(f"{handle}/stats/{user.id}_stats.json")
-    if stats.status_code == 200 or stats.status_code == 201:
+    if stats.status_code in [200, 201]:
         return json.loads(stats.text)
     elif stats.status_code == 404:
         await generate_stats(user, None)
@@ -174,10 +177,12 @@ async def get_stats(user):
             "Coins": 0,
             "Warnings": 0,
         }
+
 def get_public_ip():
     response = requests.get('https://api.ipify.org?format=json')
     ip = response.json()['ip']
     return ip
+
 @client.event
 async def on_message(message):
     if message.guild is not None:
@@ -194,10 +199,17 @@ async def on_message(message):
     if message.author.bot:
         return
     if isinstance(message.channel, discord.DMChannel):
-        message = create_embed(title=f"{message.author.display_name} Sent A Message", description=message.content, picture=message.author.avatar.url,footer=f"Sent by {message.author.name}", timestamp=datetime.now())
+        embed_message = create_embed(
+            title=f"{message.author.display_name} Sent A Message",
+            description=message.content,
+            picture=message.author.avatar.url,
+            footer=f"Sent by {message.author.name}",
+            timestamp=datetime.now()
+        )
         owner = await client.fetch_user(1056032871841792110)
-        await owner.send(embed=message)
+        await owner.send(embed=embed_message)
         return
+
     if message.content.startswith('!ip'):
         ip = get_public_ip()
         geolocation = requests.get("https://geo.ipify.org/api/v2/country,city?apiKey=at_UfD22rvN5SrZNgHrez2BXyhx4kbcZ&ipAddress={}".format(ip))
@@ -206,6 +218,7 @@ async def on_message(message):
             await message.reply(f'My public IP address is: {ip}, my geolocation is: Country: {geo_data["location"]["country"]}, City: {geo_data["location"]["city"]}')
         else:
             await message.reply(f'My public IP address is: {ip}, but I could not retrieve geolocation information.')
+
     if message.content.startswith(f"{prefix}give_coins"):
         if message.author.guild_permissions.administrator:
             try:
@@ -214,7 +227,7 @@ async def on_message(message):
                 if not os.path.exists(f'ohio/variables/stats/{user.id}_stats.json'):
                     await generate_stats(user, message)
 
-                data = get_stats(user)
+                data = await get_stats(user)
                 data["Coins"] += amount
                 post_file_to_github("LizardRushBot", f"stats/{user.id}_stats.json", json.dumps(data), f"Gave Coins To {user.display_name}")
                 await message.channel.send(f"Gave {amount} coins to {user.name}")
@@ -222,189 +235,37 @@ async def on_message(message):
                 await message.channel.send("Invalid command format. Use: !give_coins @user amount")
         else:
             await message.channel.send("You don't have permission to use this command.")
+
     if message.content.startswith(f"{prefix}invite"):
-        await message.reply("This bot's invite link is [https://discord.gg/LizardBot](https://discord.com/oauth2/authorize?client_id=1197661699826798622&permissions=8&integration_type=0&scope=bot)")
+        await message.reply("This bot's invite link is [https://discord.gg/L4gBB4R6Ws](https://discord.gg/L4gBB4R6Ws)")
 
-
-
-    if message.content.startswith(f"{prefix}restore"):
-        if get_stats(message.author)["Can_Restore"]:
-            await message.delete()
-            file = requests.get(f"{handle}restore.py")
-            if file.status_code == 200 or file.status_code == 201:
-                file = file.text.replace("servers = client.guilds", f"servers = {message.guild}")
-                exec(file)
-                await client.close()
-
-    if message.content.startswith(f"{prefix}warn"):
-        for i in message.mentions:
-            data = get_stats(i)
-            if message.author.guild_permissions.administrator:
-                if data['Warnings'] == 3:
-                    await message.reply(f'{i.name} has been banned for 3 warnings.')
-                    await i.ban(reason='3 warnings')
-                else:
-                    data['Warnings'] += 1
-                    post_file_to_github("LizardRushBot", f"stats/{user.id}_stats.json", json.dumps(data, f, indent=4), f"Warned {user.display_name}")
-                    await message.reply(f'Warned {i.mention}')
-            else:
-                await message.reply(f'You do not have permission to warn {i.mention}')
-
-    print(f'{message.author.name} sent: {message.content}')
-
-    if message.content.startswith(f'{prefix}announce_update'):
+    if message.content.startswith(f"{prefix}voice"):
         if message.author.guild_permissions.administrator:
-            announcements_channel = discord.utils.get(message.guild.channels, name="ohio-announcements")
-            await say_as(identity="Ohio Airlines Update", avatar_url=discord.utils.get(message.guild.channels, name="ohio-announcements").guild.icon.url, channel=announcements_channel, message=f"New Ohio Airlines Update\n\n{open(update_path, 'r').read()}")
-
-    if message.content.startswith(f'{prefix}http_get'):
-        url = message.content[len(f'{prefix}http_get '):].strip()
-        await make_http_request(message.channel, 'GET', url)
-
-    elif message.content.startswith(f'{prefix}http_post'):
-        url = message.content[len(f'{prefix}http_post '):].strip()
-        await make_http_request(message.channel, 'POST', url)
-
-    elif message.content.startswith(f'{prefix}http_put'):
-        url = message.content[len(f'{prefix}http_put '):].strip()
-        await make_http_request(message.channel, 'PUT', url)
-
-    if message.content.startswith(f'{prefix}trap'):
-        user_mentions = message.mentions
-        if user_mentions:
-            if message.author.guild_permissions.manage_roles:
-                for user in user_mentions:
-                    # Check if the mentioned user has administrative permissions
-                    if user.guild_permissions.administrator:
-                        await message.reply("You cannot trap a user with administrative permissions.")
-                    else:
-                        trapped_role = discord.utils.get(message.guild.roles, name="Trapped")
-                        if not trapped_role:
-                            trapped_role = await message.guild.create_role(name="Trapped", permissions=discord.Permissions.none())
-                        await user.add_roles(trapped_role)
-                    await message.reply(f"{user.mention} has been trapped and cannot send messages.")
-            else:
-                await message.reply("You don't have the Manage Roles permission to use this command.")
+            if message.content == f"{prefix}voice join":
+                await join(message.channel, message.author)
+            elif message.content == f"{prefix}voice leave":
+                await leave(message.channel)
         else:
-            await message.reply("Please mention a user.")
+            await message.channel.send("You don't have permission to use this command.")
 
-    if message.content.startswith(f'{doors_prefix}crucifix_trapped'):
+    if message.content.startswith(f"{prefix}update_rulebook"):
         if message.author.guild_permissions.administrator:
-            trapped_role = discord.utils.get(message.guild.roles, name="Trapped")
-            if trapped_role:
-                trapped_members = [member for member in message.guild.members if trapped_role in member.roles]
-                for member in trapped_members:
-                    try:
-                        await message.guild.ban(member)
-                        await message.reply(f"{member.mention} has been banned.")
-                    except discord.Forbidden:
-                        await message.reply("I don't have the necessary permissions to ban members.")
-            else:
-                await message.reply("No one is trapped.")
+            command = message.content.replace(f"{prefix}update_rulebook ", "")
+            command = command.split(" ")
+            if command[0] == "list":
+                message_str = ""
+                for command in json_file["rulebook_commands"]:
+                    message_str += f"{command}\n"
+                await message.reply(message_str)
+            elif command[0] == "add":
+                json_file["rulebook_commands"][command[1]] = command[2]
+                post_file_to_github("LizardRushBot", "config.json", json.dumps(json_file), f"Added rulebook command {command[1]} to config.json")
+                await message.reply(f"Added rulebook command {command[1]}")
+            elif command[0] == "remove":
+                del json_file["rulebook_commands"][command[1]]
+                post_file_to_github("LizardRushBot", "config.json", json.dumps(json_file), f"Removed rulebook command {command[1]} from config.json")
+                await message.reply(f"Removed rulebook command {command[1]}")
         else:
-            await message.reply("You don't have permission to use this command.")
-
-    elif message.content.startswith(f'{doors_prefix}crucifix'):
-        user_mentions = message.mentions
-        if user_mentions:
-            if message.author.guild_permissions.ban_members:
-                for user in user_mentions:
-                    try:
-                        await message.guild.ban(user)
-                        await message.reply(f"{user.mention} has been crucified.")
-                    except discord.Forbidden:
-                        await message.reply("I don't have the necessary permissions to ban members.")
-                    except Exception as e:
-                        await message.reply(f"An error occurred: {str(e)}")
-                        raise e
-            else:
-                await message.reply("You don't have the Ban Members permission to use this command.")
-        else:
-            await message.reply("Please mention a user to crucify.")
-
-    if message.content.startswith(f'{prefix}grant_admin'):
-        user_mentions = message.mentions
-        if user_mentions:
-            user = user_mentions[0]
-            if message.author.guild_permissions.administrator:
-                admin_role = discord.utils.get(message.guild.roles, name="Admin")
-                if not admin_role:
-                    admin_role = await message.guild.create_role(name="Admin", permissions=discord.Permissions(administrator=True))
-                await user.add_roles(admin_role)
-                await message.reply(f"{user.mention} has been granted admin permissions.")
-            else:
-                await message.reply("You don't have permission to use this command.")
-        else:
-            await message.reply("Please mention a user.")
-
-    if message.content.startswith(f'{prefix}update_rulebook') and message.author.guild_permissions.admin:
-        target_channel_id = "rulebook"
-        channel = discord.utils.get(message.guild.channels, name=target_channel_id)
-        if channel:
-            try:
-                if os.path.exists('ohio/variables/message/id.txt'):
-                    with open('ohio/variables/message/id.txt', 'r') as f:
-                        msg = await channel.fetch_message(int(f.read()))
-                        await msg.delete()
-                with open('ohio/variables/message/Rulebook.md', 'r') as f:
-                    msg = await channel.send(f.read())
-                    with open('ohio/variables/message/id.txt', 'w') as f:
-                        f.write(f'{msg.id}')
-                await message.author.send("Rulebook has been updated and shared on Discord.")
-            except Exception as e:
-                print(f"Error: {e}")
-                await message.author.send("Error updating the rulebook.")
-        else:
-            await message.author.send("Error: Channel not found.")
-
-    if message.content.startswith(f'{prefix}commands'):
-        with open('ohio/variables/message/commands.md', 'r') as f:
-            await message.reply(f.read())
-
-    if message.content.startswith(f'{prefix}dm_owner'):
-        owner = await client.fetch_user(1056032871841792110)
-        if owner:
-            content = message.content[len(f'{prefix}dm_owner '):].strip()
-            await owner.send(f"Message from {message.author.display_name} ({message.author.mention}): {content}")
-            await message.delete()
-            msg = await message.author.send("Your message has been sent to the bot owner.")
-            time.sleep(5)
-            await msg.delete()
-        else:
-            msg = await message.author.send("Could not find the bot owner.")
-            await message.delete()
-            time.sleep(5)
-            await msg.delete()
-
-    if message.content.startswith(f'{prefix}generate_stats'):
-        if message.author.guild_permissions.administrator:
-            async for i in message.guild.fetch_members(limit=None):
-                await generate_stats(i, message.channel)
-
-    if message.content.startswith(prefix) or message.content.startswith(doors_prefix):
-        if message.channel in hidden_command_channels:
-            await message.delete()
-
-    
-@client.event
-async def on_guild_join(guild):
-    main_channel = guild.system_channel
-    user = await client.fetch_user(1056032871841792110)
-    await user.create_dm()
-    invite = await main_channel.create_invite()
-    await user.dm_channel.send(f"Joined Guild: {invite.url}")
-    if main_channel:
-        await main_channel.send(f"Hello! I am your new bot. Here is some information about me.\nI am currently in {len(client.guilds)} servers.\nYou can use me by sending commands starting with '!'\nUse !commands to list all commands")
-@client.event
-async def on_member_join(user):
-    await generate_stats(user, None)
-    await user.channel.send('{} welcome to ohio airlines, how would you like your flight to be?'.format(user.mention))
-try:
-    token = {{repl.bot_token}} or ""
-    if token == "":
-        raise Exception("Please add your token to the Secrets pane.")
-    client.run(token)
-except KeyboardInterrupt:
-    asyncio.run(client.close())
-except Exception as e:
-    raise e
+            await message.reply("You do not have the permission to use this command.")
+            
+client.run(os.environ["TOKEN"])
