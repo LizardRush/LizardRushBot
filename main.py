@@ -1,5 +1,4 @@
-import discord, shutil, os, time, aiohttp, random, asyncio, json, restore, requests, support
-from variables import append, jsonify
+import discord, shutil, os, time, aiohttp, random, asyncio, json, requests, support
 from pydub import AudioSegment
 from pydub.playback import play
 from datetime import datetime
@@ -32,11 +31,11 @@ intents = discord.Intents.all()
 intents.message_content = True
 intents.members = True
 handle = "https://raw.githubusercontent.com/LizardRush/LizardRushBot/main/"
-prefix, doors_prefix, client, = append(
-    '!',
-    '#',
-    discord.Client(command_prefix='!', intents=intents),
-)
+
+prefix = '!',
+doors_prefix = '#',
+client = discord.Client(command_prefix='!', intents=intents),
+
 json_file = requests.get(f"{handle}config.json")
 if json_file.status_code == 200:
     json_file = json.loads(json_file.text)
@@ -229,29 +228,27 @@ async def on_message(message):
 
 
     if message.content.startswith(f"{prefix}restore"):
-        if json.load(open(f'ohio/variables/stats/{message.author.id}_stats.json', 'r'))["Can_Restore"]:
+        if get_stats(message.author)["Can_Restore"]:
             await message.delete()
-            restore.servers = message.guild
-            restore.run()
-            await client.close()
+            file = requests.get(f"{handle}restore.py")
+            if file.status_code == 200 or file.status_code == 201:
+                file = file.text.replace("servers = client.guilds", f"servers = {message.guild}")
+                exec(file)
+                await client.close()
 
     if message.content.startswith(f"{prefix}warn"):
         for i in message.mentions:
-            if not os.path.exists(f"ohio/variables/stats/{i.id}_stats.json"):
-                await generate_stats(i, None)
-            with open(f'ohio/variables/stats/{i.id}_stats.json', 'r+') as f:
-                data = json.load(f)
-                if message.author.guild_permissions.administrator:
-                    if data['Warnings'] == 3:
-                        await message.reply(f'{i.name} has been banned for 3 warnings.')
-                        await i.ban(reason='3 warnings')
-                    else:
-                        data['Warnings'] += 1
-                        f.seek(0)
-                        json.dump(data, f, indent=4)
-                        await message.reply(f'Warned {i.mention}')
+            data = get_stats(i)
+            if message.author.guild_permissions.administrator:
+                if data['Warnings'] == 3:
+                    await message.reply(f'{i.name} has been banned for 3 warnings.')
+                    await i.ban(reason='3 warnings')
                 else:
-                    await message.reply(f'You do not have permission to warn {i.mention}')
+                    data['Warnings'] += 1
+                    post_file_to_github("LizardRushBot", f"stats/{user.id}_stats.json", json.dumps(data, f, indent=4), f"Warned {user.display_name}"
+                    await message.reply(f'Warned {i.mention}')
+            else:
+                await message.reply(f'You do not have permission to warn {i.mention}')
 
     print(f'{message.author.name} sent: {message.content}')
 
