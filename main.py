@@ -245,7 +245,7 @@ async def on_message(message):
                     await i.ban(reason='3 warnings')
                 else:
                     data['Warnings'] += 1
-                    post_file_to_github("LizardRushBot", f"stats/{user.id}_stats.json", json.dumps(data, f, indent=4), f"Warned {user.display_name}"
+                    post_file_to_github("LizardRushBot", f"stats/{user.id}_stats.json", json.dumps(data, f, indent=4), f"Warned {user.display_name}")
                     await message.reply(f'Warned {i.mention}')
             else:
                 await message.reply(f'You do not have permission to warn {i.mention}')
