@@ -1,4 +1,4 @@
-import discord, shutil, os, time, aiohttp, random, asyncio, json, requests, support
+import discord, shutil, os, time, aiohttp, random, asyncio, json, requests
 from pydub import AudioSegment
 from pydub.playback import play
 from datetime import datetime
