@@ -86,4 +86,4 @@ async def on_ready():
     await client.close()
 
 def run():
-    client.run(os.environ["TOKEN"])
+    client.run({{repl.bot_token}})
