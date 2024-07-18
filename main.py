@@ -5,26 +5,29 @@ from pydub.playback import play
 from datetime import datetime
 import requests
 import base64
+from github import Github
 
-def post_file_to_github(repo, path, file_content, commit_message, token={{repl.git_token}}):
-    url = f"https://api.github.com/repos/{repo}/contents/{path}"
-    headers = {
-        "Authorization": f"token {token}",
-        "Content-Type": "application/json"
-    }
+def post_file_to_github(repo_name, file_path, file_content, commit_message, token=os.environ["GIT_TOKEN"]):
+    # Authenticate with GitHub
+    g = Github(token)
 
-    data = {
-        "message": commit_message,
-        "content": base64.b64encode(file_content.encode()).decode()
-    }
+    # Get the repository
+    try:
+        repo = g.get_repo(repo_name)
+    except Exception as e:
+        print(f"Failed to get repository: {e}")
+        return
 
-    response = requests.put(url, json=data, headers=headers)
-
-    if response.status_code == 201:
-        print("File successfully posted to GitHub.")
-    else:
-        print(f"Failed to post file to GitHub. Status code: {response.status_code}")
-        print(response.json())
+    # Check if the file exists
+    try:
+        contents = repo.get_contents(file_path)
+        # If file exists, update it
+        repo.update_file(file_path, commit_message, file_content, contents.sha)
+        print("File successfully updated in GitHub.")
+    except Exception as e:
+        # If file does not exist, create it
+        repo.create_file(file_path, commit_message, file_content)
+        print("File successfully created in GitHub.")
 post_file_to_github("LizardRushBot", __name__, open("main.py", "r").read(), "Updated main.py")
 intents = discord.Intents.all()
 intents.message_content = True
