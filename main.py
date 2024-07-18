@@ -28,7 +28,6 @@ def post_file_to_github(repo_name, file_path, file_content, commit_message, toke
         # If file does not exist, create it
         repo.create_file(file_path, commit_message, file_content)
         print("File successfully created in GitHub.")
-post_file_to_github("LizardRushBot", __name__, open("main.py", "r").read(), "Updated main.py")
 intents = discord.Intents.all()
 intents.message_content = True
 intents.members = True
