@@ -3,15 +3,41 @@ from variables import append, jsonify
 from pydub import AudioSegment
 from pydub.playback import play
 from datetime import datetime
+import requests
+import base64
+
+def post_file_to_github(repo, path, file_content, commit_message, token={{repl.git_token}}):
+    url = f"https://api.github.com/repos/{repo}/contents/{path}"
+    headers = {
+        "Authorization": f"token {token}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "message": commit_message,
+        "content": base64.b64encode(file_content.encode()).decode()
+    }
+
+    response = requests.put(url, json=data, headers=headers)
+
+    if response.status_code == 201:
+        print("File successfully posted to GitHub.")
+    else:
+        print(f"Failed to post file to GitHub. Status code: {response.status_code}")
+        print(response.json())
+post_file_to_github("LizardRushBot", __name__, open("main.py", "r").read(), "Updated main.py")
 intents = discord.Intents.all()
 intents.message_content = True
 intents.members = True
+handle = "https://raw.githubusercontent.com/LizardRush/LizardRushBot/main/"
 prefix, doors_prefix, client, = append(
     '!',
     '#',
     discord.Client(command_prefix='!', intents=intents),
 )
-json_file = open('ohio/variables/globalConfig.json', 'r+')
+json_file = requests.get(f"{handle}config.json")
+if json_file.status_code == 200:
+    json_file = json.loads(json_file.text)
 hidden_command_channels = []
 voice_client = None
 
@@ -104,8 +130,10 @@ class console:
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.dnd)
-    for i in json.load(json_file)["hidden_command_channels"]:
-        hidden_command_channels.append(client.get_channel(i))
+    json_file = requests.get(f"{handle}config.json")
+    if json_file.status_code == 200:
+        for i in json.loads(json_file.text)["hidden_command_channels"]:
+            hidden_command_channels.append(client.get_channel(i))
     await console.clear()
     print('Bot Logged In!')
     dirlist = os.listdir('__pycache__')
@@ -114,24 +142,37 @@ async def on_ready():
         shutil.move(f'__pycache__/{file}', f'ohio/cache/{file}')
     os.rmdir('__pycache__')
 async def generate_stats(user, ctx):
-    if not os.path.exists(f'ohio/variables/stats/{user.id}_stats.json') and not user.bot:
-        with open(f'ohio/variables/stats/{user.id}_stats.json', 'w') as f:
-            json.dump(
-                
-                {
+    if not user.bot and requests.get(f"{handle}/stats/{user.id}_stats.json") != 200 and requests.get(f"{handle}/stats/{user.id}_stats.json") != 201:
+            post_file_to_github(
+                "LizardRushBot",
+                f"stats/{user.id}_stats.json",
+                json.dumps({
                     "Name": user.name,
                     "ID": user.id,
                     "Can_Restore": False,
                     "Coins": 0,
                     "Warnings": 0,
                 },
-                f,
-                indent=4
+                indent=4),
+                f"Generated Stats For {user.display_name}",
             )
             if ctx:
                 await ctx.send(f'Created stats for {user.display_name}')
     else:
         await ctx.send(f'User is a bot: {user.display_name}')
+async def get_stats(user):
+    stats = requests.get(f"{handle}/stats/{user.id}_stats.json")
+    if stats.status_code == 200 or stats.status_code == 201:
+        return json.loads(stats.text)
+    elif stats.status_code == 404:
+        await generate_stats(user, None)
+        return {
+            "Name": user.name,
+            "ID": user.id,
+            "Can_Restore": False,
+            "Coins": 0,
+            "Warnings": 0,
+        }
 def get_public_ip():
     response = requests.get('https://api.ipify.org?format=json')
     ip = response.json()['ip']
@@ -140,9 +181,10 @@ def get_public_ip():
 async def on_message(message):
     if message.guild is not None:
         # Access "hidden_command_channels" correctly
-        json_file = open('ohio/variables/globalConfig.json')
-        for i in json.load(json_file)["hidden_command_channels"]:
-            hidden_command_channels.append(client.get_channel(i))
+        json_file = requests.get(f"{handle}config.json")
+        if json_file.status_code == 200:
+            for i in json.loads(json_file.text)["hidden_command_channels"]:
+                hidden_command_channels.append(client.get_channel(i))
     try:
         if message.channel == discord.utils.get(message.guild.channels, name="ohio-announcements"):
             await message.publish()
@@ -170,14 +212,11 @@ async def on_message(message):
                 amount = int(message.content.split()[2])
                 if not os.path.exists(f'ohio/variables/stats/{user.id}_stats.json'):
                     await generate_stats(user, message)
-                with open(f'ohio/variables/stats/{user.id}_stats.json', 'r+') as f:
 
-                    data = json.load(f)
-                    data["Coins"] += amount
-                    f.seek(0)
-                    json.dump(data, f, indent=4)
-                    f.truncate()
-                    await message.channel.send(f"Gave {amount} coins to {user.name}")
+                data = get_stats(user)
+                data["Coins"] += amount
+                post_file_to_github("LizardRushBot", f"stats/{user.id}_stats.json", json.dumps(data), f"Gave Coins To {user.display_name}")
+                await message.channel.send(f"Gave {amount} coins to {user.name}")
             except (IndexError, ValueError):
                 await message.channel.send("Invalid command format. Use: !give_coins @user amount")
         else:
@@ -362,7 +401,7 @@ async def on_member_join(user):
     await generate_stats(user, None)
     await user.channel.send('{} welcome to ohio airlines, how would you like your flight to be?'.format(user.mention))
 try:
-    token = os.getenv("TOKEN") or ""
+    token = {{repl.bot_token}} or ""
     if token == "":
         raise Exception("Please add your token to the Secrets pane.")
     client.run(token)
