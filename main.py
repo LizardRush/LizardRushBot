@@ -136,13 +136,6 @@ async def on_ready():
     if json_file.status_code == 200:
         for i in json.loads(json_file.text)["hidden_command_channels"]:
             hidden_command_channels.append(client.get_channel(i))
-    await console.clear()
-    print('Bot Logged In!')
-    dirlist = os.listdir('__pycache__')
-    channel = client.get_channel(1199826475969425478)
-    for file in dirlist:
-        shutil.move(f'__pycache__/{file}', f'ohio/cache/{file}')
-    os.rmdir('__pycache__')
 
 async def generate_stats(user, ctx):
     if not user.bot and requests.get(f"{handle}/stats/{user.id}_stats.json") not in [200, 201]:
