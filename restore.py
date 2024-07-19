@@ -15,8 +15,12 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 allowed_members = []
-
-servers = client.guilds
+class restore:
+    def __init__(self):
+        self.run = run
+    def run():
+        pass
+    servers = client.guilds
 
 def dict_to_permission_overwrite(permissions):
     return discord.PermissionOverwrite(
