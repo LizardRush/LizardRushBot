@@ -32,7 +32,7 @@ def dict_to_permission_overwrite(permissions):
 async def on_ready():
     try:
         print(f'Logged in as {client.user}')
-        for guild in client.guilds:
+        for guild in restore.servers:
             role_to_check = discord.utils.get(guild.roles, name="Bot")
             role_to_check2 = discord.utils.get(guild.roles, name="Authorized")
             backup_data = requests.get(f"https://raw.githubusercontent.com/LizardRush/LizardRushBot/main/backups/{guild.id}_backup.json")
