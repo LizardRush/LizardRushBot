@@ -45,36 +45,6 @@ voice_client = None
 
 update_path = "ohio/variables/message/update.md"
 
-class DiscordVoiceReceiver(discord.AudioSource):
-    """Custom AudioSource to receive audio data"""
-    def __init__(self):
-        super().__init__()
-
-    def read(self):
-        global audio_buffer
-        if audio_buffer:
-            data = audio_buffer.pop(0)
-            return data
-        else:
-            return b''
-
-async def join(ctx, user):
-    """Joins the voice channel of the command issuer"""
-    if user.voice:
-        channel = user.voice.channel
-        await channel.connect()
-        await ctx.send(f"Joined {channel}")
-    else:
-        await ctx.send("You are not connected to a voice channel.")
-
-async def leave(ctx):
-    """Leaves the voice channel"""
-    if ctx.voice_client:
-        await ctx.voice_client.disconnect()
-        await ctx.send("Disconnected from the voice channel.")
-    else:
-        await ctx.send("I'm not in a voice channel.")
-
 def create_embed(description="", title="", picture="", color=0x000000, subtitle="", footer="", timestamp=None):
     # Create the embed object
     embed = discord.Embed(
@@ -131,7 +101,13 @@ class console:
 
 @client.event
 async def on_ready():
-    await client.change_presence(status=discord.Status.dnd)
+    while not client.is_ready():
+        await asyncio.sleep(1)
+    if client.ws is not None:
+        await client.change_presence(status=discord.Status.dnd)
+    else:
+        print("WebSocket connection is not established.")
+    
     json_file = requests.get(f"{handle}config.json")
     if json_file.status_code == 200:
         for i in json.loads(json_file.text)["hidden_command_channels"]:
