@@ -245,13 +245,13 @@ async def setup():
             "description": "Give coins to a user",
             "options": [
                 {
-                    "type": discord.OptionType.USER,
+                    "type": discord.AppCommandOptionType.USER,
                     "name": "user",
                     "description": "The person to give coins to",
                     "required": True
                 },
                 {
-                    "type": discord.OptionType.INTEGER,
+                    "type": discord.AppCommandOptionType.INTEGER,
                     "name": "amount",
                     "description": "Amount of coins to give",
                     "required": True
@@ -263,7 +263,7 @@ async def setup():
             "description": "Warn a user",
             "options": [
                 {
-                    "type": discord.OptionType.USER,
+                    "type": discord.AppCommandOptionType.USER,
                     "name": "user",
                     "description": "The person to warn",
                     "required": True
@@ -279,7 +279,7 @@ async def setup():
             "description": "Trap a user",
             "options": [
                 {
-                    "type": discord.OptionType.USER,
+                    "type": discord.AppCommandOptionType.USER,
                     "name": "user",
                     "description": "The person to trap",
                     "required": True
@@ -291,7 +291,7 @@ async def setup():
             "description": "Crucify a user",
             "options": [
                 {
-                    "type": discord.OptionType.USER,
+                    "type": discord.AppCommandOptionType.USER,
                     "name": "user",
                     "description": "The person to crucify",
                     "required": True
@@ -307,7 +307,7 @@ async def setup():
             "description": "Grant admin permissions to a user",
             "options": [
                 {
-                    "type": discord.OptionType.USER,
+                    "type": discord.AppCommandOptionType.USER,
                     "name": "user",
                     "description": "The person to grant admin permissions to",
                     "required": True
