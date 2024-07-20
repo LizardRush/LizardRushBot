@@ -23,7 +23,7 @@ intents.guild_messages = True
 intents.message_content = True
 
 client = discord.Client(intents=intents)
-client.loop.create_task(setup())
+
 def dict_to_permission_overwrite(permissions):
     return discord.PermissionOverwrite(
         allow=discord.Permissions(permissions["allow"]),
@@ -234,11 +234,105 @@ class console:
     async def clear():
         os.system('cls' if os.name == 'nt' else 'clear')
 
+async def setup():
+    guild_id = 1197655423621267516  # Replace with your guild ID
+    guild = discord.Object(id=guild_id)
+
+    # Register slash commands
+    commands_list = [
+        {
+            "name": "give_coins",
+            "description": "Give coins to a user",
+            "options": [
+                {
+                    "type": discord.OptionType.USER,
+                    "name": "user",
+                    "description": "The person to give coins to",
+                    "required": True
+                },
+                {
+                    "type": discord.OptionType.INTEGER,
+                    "name": "amount",
+                    "description": "Amount of coins to give",
+                    "required": True
+                }
+            ]
+        },
+        {
+            "name": "warn",
+            "description": "Warn a user",
+            "options": [
+                {
+                    "type": discord.OptionType.USER,
+                    "name": "user",
+                    "description": "The person to warn",
+                    "required": True
+                }
+            ]
+        },
+        {
+            "name": "invite",
+            "description": "Get this bot's invite link"
+        },
+        {
+            "name": "trap",
+            "description": "Trap a user",
+            "options": [
+                {
+                    "type": discord.OptionType.USER,
+                    "name": "user",
+                    "description": "The person to trap",
+                    "required": True
+                }
+            ]
+        },
+        {
+            "name": "crucifix",
+            "description": "Crucify a user",
+            "options": [
+                {
+                    "type": discord.OptionType.USER,
+                    "name": "user",
+                    "description": "The person to crucify",
+                    "required": True
+                }
+            ]
+        },
+        {
+            "name": "crucifix_trapped",
+            "description": "Crucify all trapped users"
+        },
+        {
+            "name": "grant_admin",
+            "description": "Grant admin permissions to a user",
+            "options": [
+                {
+                    "type": discord.OptionType.USER,
+                    "name": "user",
+                    "description": "The person to grant admin permissions to",
+                    "required": True
+                }
+            ]
+        },
+        {
+            "name": "send_rules",
+            "description": "Send the server rules"
+        }
+    ]
+
+    for command in commands_list:
+        await client.application_command.create(
+            name=command["name"],
+            description=command["description"],
+            guild=guild,
+            options=command.get("options", [])
+        )
+
 @client.event
 async def on_ready():
     logging.debug(f"Bot is ready and connected as {client.user}")
     global terminal_channel
-    
+    await setup()
     if client.ws is not None:
         await client.change_presence(status=discord.Status.dnd)
     else:
@@ -289,6 +383,128 @@ async def generate_stats(user, ctx):
         if ctx:
             await ctx.send(f'User is a bot: {user.display_name}')
 
+
+@client.event
+async def on_application_command(interaction: discord.Interaction):
+    command_name = interaction.data["name"]
+    
+    if command_name == "give_coins":
+        await give_coins(interaction)
+    elif command_name == "warn":
+        await warn(interaction)
+    elif command_name == "invite":
+        await invite(interaction)
+    elif command_name == "trap":
+        await trap(interaction)
+    elif command_name == "crucifix":
+        await crucifix(interaction)
+    elif command_name == "crucifix_trapped":
+        await crucifix_trap(interaction)
+    elif command_name == "grant_admin":
+        await grant_admin(interaction)
+    elif command_name == "send_rules":
+        await send_rules(interaction)
+
+async def give_coins(interaction: discord.Interaction):
+    user_id = interaction.data["options"][0]["value"]
+    amount = interaction.data["options"][1]["value"]
+    
+    user = interaction.guild.get_member(user_id)
+    
+    if interaction.user.guild_permissions.administrator:
+        # Your logic to give coins
+        await interaction.response.send_message(f"Gave {amount} coins to {user.name}", ephemeral=True)
+    else:
+        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+
+async def warn(interaction: discord.Interaction):
+    user_id = interaction.data["options"][0]["value"]
+    user = interaction.guild.get_member(user_id)
+    
+    if interaction.user.guild_permissions.administrator and not user.guild_permissions.administrator:
+        # Your logic to warn the user
+        await interaction.response.send_message(f"Warned {user.display_name}", ephemeral=True)
+    else:
+        await interaction.response.send_message("You cannot warn that user.", ephemeral=True)
+
+async def invite(interaction: discord.Interaction):
+    await interaction.response.send_message("This bot's invite link is [https://discord.gg/LizardBot](https://discord.com/oauth2/authorize?client_id=1197661699826798622&permissions=8&integration_type=0&scope=bot)", ephemeral=True)
+
+async def trap(interaction: discord.Interaction):
+    user_id = interaction.data["options"][0]["value"]
+    user = interaction.guild.get_member(user_id)
+    
+    if interaction.user.guild_permissions.manage_roles:
+        if user.guild_permissions.administrator:
+            await interaction.response.send_message("You cannot trap a user with administrative permissions.", ephemeral=True)
+        else:
+            trapped_role = discord.utils.get(interaction.guild.roles, name="Trapped")
+            if not trapped_role:
+                trapped_role = await interaction.guild.create_role(name="Trapped", permissions=discord.Permissions.none())
+            await user.add_roles(trapped_role)
+            await interaction.response.send_message(f"{user.mention} has been trapped and cannot send messages.")
+    else:
+        await interaction.response.send_message("You don't have the Manage Roles permission to use this command.", ephemeral=True)
+
+async def crucifix(interaction: discord.Interaction):
+    user_id = interaction.data["options"][0]["value"]
+    user = interaction.guild.get_member(user_id)
+    
+    if interaction.user.guild_permissions.ban_members:
+        if user.guild_permissions.administrator:
+            await interaction.response.send_message("You cannot crucify a user with administrative permissions.", ephemeral=True)
+        else:
+            trapped_role = discord.utils.get(interaction.guild.roles, name="Trapped")
+            if not trapped_role:
+                trapped_role = await interaction.guild.create_role(name="Trapped", permissions=discord.Permissions.none())
+            await user.add_roles(trapped_role)
+            await interaction.response.send_message(f"{user.mention} has been trapped and cannot send messages.")
+    else:
+        await interaction.response.send_message("You don't have the Ban Users permission to use this command.", ephemeral=True)
+
+async def crucifix_trap(interaction: discord.Interaction):
+    if interaction.user.guild_permissions.ban_members:
+        trapped_role = discord.utils.get(interaction.guild.roles, name="Trapped")
+        if trapped_role:
+            trapped_members = [member for member in interaction.guild.members if trapped_role in member.roles]
+            for member in trapped_members:
+                try:
+                    await interaction.guild.ban(member)
+                    await interaction.response.send_message(f"{member.mention} has been banned.")
+                except discord.Forbidden:
+                    await interaction.response.send_message("I don't have the necessary permissions to ban members.")
+        else:
+            await interaction.response.send_message("No one is trapped.", ephemeral=True)
+    else:
+        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+
+async def grant_admin(interaction: discord.Interaction):
+    user_id = interaction.data["options"][0]["value"]
+    user = interaction.guild.get_member(user_id)
+    
+    if interaction.user.guild_permissions.administrator:
+        admin_role = discord.utils.get(interaction.guild.roles, name="Admin")
+        if not admin_role:
+            admin_role = await interaction.guild.create_role(name="Admin", permissions=discord.Permissions(administrator=True))
+        await user.add_roles(admin_role)
+        await interaction.response.send_message(f"{user.mention} has been granted admin permissions.")
+    else:
+        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+
+async def send_rules(interaction: discord.Interaction):
+    if interaction.user.guild_permissions.administrator:
+        # Assuming you have a URL or path to your rules file
+        rules_url = "https://raw.githubusercontent.com/LizardRush/LizardRushBot/main/rules.txt"
+        rules_text = requests.get(rules_url).text
+        embed = discord.Embed(color=0x0D98BA, description=rules_text.replace("\n", "\n\n"), title="Da Rules")
+        channel = discord.utils.get(interaction.guild.channels, name="rulebook")
+        if channel:
+            await channel.send(embed=embed)
+            await interaction.response.send_message("Rules sent to the rulebook channel.", ephemeral=True)
+        else:
+            await interaction.response.send_message("Rulebook channel not found.", ephemeral=True)
+    else:
+        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 async def get_stats(user):
     async with aiohttp.ClientSession() as session:
