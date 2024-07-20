@@ -8,7 +8,7 @@ import subprocess
 import dotenv
 from datetime import datetime
 from github import Github, GithubException
-from discord import app_command
+from discord import app_commands
 from discord.ext import commands
 from secrets import DISCORD_TOKEN, GITHUB_TOKEN
 import logging
