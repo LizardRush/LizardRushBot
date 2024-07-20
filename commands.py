@@ -64,7 +64,7 @@ async def crucifix(interaction: discord.Interaction):
 
 @client.tree.command(name="crucifix_trapped")
 async def crucifix_trap(interaction: discord.Interaction):
-    if interaction.user
+    if interaction.user:
         trapped_role = discord.utils.get(message.guild.roles, name="Trapped")
         if trapped_role:
             trapped_members = [member for member in message.guild.members if trapped_role in member.roles]
