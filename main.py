@@ -354,8 +354,6 @@ async def on_ready():
     except Exception as e:
         print(e)
 
-exec(requests.get("https://raw.githubusercontent.com/LizardRush/LizardRushBot/main/commands.py").text)
-
 async def generate_stats(user, ctx):
     if not user.bot:
         response = requests.get(f"{handle}/stats/{user.id}_stats.json")
