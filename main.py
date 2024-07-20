@@ -8,7 +8,8 @@ import subprocess
 import dotenv
 from datetime import datetime
 from github import Github, GithubException
-from discord import app_commands
+from discord import app_command
+from discord.ext import commands
 from secrets import DISCORD_TOKEN, GITHUB_TOKEN
 import logging
 
@@ -496,5 +497,5 @@ async def on_message(message):
     if message.content.startswith(prefix) or message.content.startswith(doors_prefix):
         if message.channel in hidden_command_channels:
             await message.delete()
-            
+client.loop.create_task(setup())
 client.run(DISCORD_TOKEN)
