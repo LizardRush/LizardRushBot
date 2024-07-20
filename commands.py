@@ -1,6 +1,6 @@
 @client.tree.command(name="give_coins")
 @app_commands.describe(user="The person to give them to", amount="Coins amount")
-async def give_coins(interaction: discord.Interaction, user: discord.user, amount: int)
+async def give_coins(interaction: discord.Interaction, user: discord.user, amount: int):
     if interaction.user.guild_permissions.administrator:
         amount = int(message.content.split()[2])
         data = get_stats(user)
