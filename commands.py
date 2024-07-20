@@ -85,10 +85,14 @@ async def grant_admin(interaction: discord.Interaction, user: discord.user):
     if interaction.user.guild_permissions.administrator:
         admin_role = discord.utils.get(interaction.guild.roles, name="Admin")
         if not admin_role:
-            admin_role = await message.guild.create_role(name="Admin", permissions=discord.Permissions(administrator=True))
+            admin_role = await interaction.guild.create_role(name="Admin", permissions=discord.Permissions(administrator=True))
         await user.add_roles(admin_role)
         interaction.response.send_message(f"{user.mention} has been granted admin permissions.")
     else:
         await interaction.response.send_message("You don't have permission to use this command.", empheral=True)
 
 @client.tree.command(name="send_rules")
+async def send_rules(interaction:discord.Interaction):
+    if interaction.user.guild_permissions.administrator:
+        channel = discord.utils.get(interaction.guild.channels, "rulebook")
+        embed = create_embed(color=0x0D98BA, description=requests.get(f"{handle}rules.txt").text.replace("\n", "\n\n"), title="Da Rules")
