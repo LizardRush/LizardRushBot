@@ -23,7 +23,7 @@ intents.guild_messages = True
 intents.message_content = True
 
 client = discord.Client(intents=intents)
-
+client.loop.create_task(setup())
 def dict_to_permission_overwrite(permissions):
     return discord.PermissionOverwrite(
         allow=discord.Permissions(permissions["allow"]),
@@ -497,5 +497,5 @@ async def on_message(message):
     if message.content.startswith(prefix) or message.content.startswith(doors_prefix):
         if message.channel in hidden_command_channels:
             await message.delete()
-client.loop.create_task(setup())
+
 client.run(DISCORD_TOKEN)
