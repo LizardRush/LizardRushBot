@@ -1,4 +1,2 @@
 # Ohio airlines LizardBot
-Slash commands are added, LizardBot Terminal commands are still on_message
-
-nearly leaked a token dang
+no taking my code, it my code, u no take
