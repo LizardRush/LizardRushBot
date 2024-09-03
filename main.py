@@ -202,24 +202,26 @@ async def on_message(message):
         
 
 @client.event
-async def on_member_join(member):
-    INVITE_LINK = "https://discord.gg/pJstGtrj6h"
-    # Fetch the invite logs
-    invites_before_join = await member.guild.invites()
+async def on_member_join(member: discord.Member):
+    # INVITE_LINK = "https://discord.gg/pJstGtrj6h"
+    # # Fetch the invite logs
+    invites_before_join = await member.guild.invites
+    for i in invites_before_join:
+        print(i)
     
-    # Check the invite link used
-    used_invite = None
-    for invite in invites_before_join:
-        if invite.code in INVITE_LINK:
-            used_invite = invite
-            break
+    # # Check the invite link used
+    # used_invite = None
+    # for invite in invites_before_join:
+    #     if invite.code in INVITE_LINK:
+    #         used_invite = invite
+    #         break
 
-    if used_invite:
-        # Find the admin role in the server
-        role = discord.utils.get(member.guild.roles, id=1198263479161856030)
-        if role:
-            await member.add_roles(role)
-            await member.send(f'You have been granted the Admin rank in the server as you joined from te admin only server')
+    # if used_invite:
+    #     # Find the admin role in the server
+    #     role = discord.utils.get(member.guild.roles, id=1198263479161856030)
+    #     if role:
+    #         await member.add_roles(role)
+    #         await member.send(f'You have been granted the Admin rank in the server as you joined from te admin only server')
 
 # Setup hook for command tree
 async def setup_hook():
