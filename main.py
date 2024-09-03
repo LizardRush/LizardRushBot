@@ -329,5 +329,7 @@ async def clear(interaction: discord.Interaction, amount: int):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
+post_file_to_github("LizardRush/LizardRushBot", "main.py", open("./main.py").read(), commit_message="from git_updater: Updated main.py")
+
 # Start the bot
 client.run(DISCORD_TOKEN)
