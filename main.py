@@ -205,7 +205,7 @@ async def on_message(message):
 async def on_member_join(member: discord.Member):
     # INVITE_LINK = "https://discord.gg/pJstGtrj6h"
     # # Fetch the invite logs
-    invites_before_join = await member.guild.invites
+    invites_before_join = member.guild.invites
     for i in invites_before_join:
         print(i)
     
