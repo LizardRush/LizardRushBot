@@ -115,6 +115,13 @@ def post_file_to_github(repo_name, file_path, file_content, commit_message, toke
     except GithubException as e:
         print(f"Failed to get repository: {e}")
 
+def is_file_in_repo(repo_name, file_path):
+    link = f"https://raw.githubusercontent.com/{repo_name}/{file_path}"
+    if requests.get(link).status_code == 200:
+        return link
+    else:
+        return False
+
 # Create an embed message
 def create_embed(title, description, color=0x000000):
     embed = discord.Embed(title=title, description=description, color=color)
@@ -186,6 +193,17 @@ async def on_ready():
     if json_data:
         for channel_id in json_data.get("hidden_command_channels", []):
             hidden_command_channels.append(client.get_channel(channel_id))
+    
+    guilds = client.guilds
+
+    for g in guilds:
+        for member in g.members:
+            if is_file_in_repo("LizardRush/LizardRushBot", f"stats/{member.id}_stats.json"):
+                file = requests.get(is_file_in_repo("LizardRush/LizardRushBot", f"stats/{member.id}_stats.json")).text
+                data = json.loads(file)
+                data["Name"] = member.name
+            elif not member.bot:
+                await generate_stats(member, None)
 
 @client.event
 async def on_message(message):
