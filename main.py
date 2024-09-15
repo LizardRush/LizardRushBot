@@ -217,6 +217,8 @@ async def on_message(message):
             embed.add_field(name="Attachments")
         await owner.create_dm()
         await owner.send(files=attachments, embed=embed)
+    if client.user in message.mentions:
+        await message.reply("hi.")
         
 
 @client.event
@@ -258,11 +260,7 @@ async def give_coins(interaction: discord.Interaction, user: discord.User, amoun
         post_file_to_github("LizardRush/LizardRushBot", f"stats/{user.id}_stats.json", json.dumps(data, indent=4))
         await interaction.response.send_message(f"Gave {amount} coins to {user.name}", ephemeral=True)
     else:
-        if random.randint(1, 1000) == 1:
-            await interaction.response.send_message("no, take this instead", ephemeral=True)
-            await interaction.user.timeout(timedelta(days=random.randint(3, 60)))
-        else:
-            await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 @tree.command(name="warn", description="Warn a user, if they get warned after they get 3 warnings they get banned")
 @app_commands.describe(user="The person to warn")
@@ -277,11 +275,7 @@ async def warn(interaction: discord.Interaction, user: discord.User):
             post_file_to_github("LizardRush/LizardRushBot", f"stats/{user.id}_stats.json", json.dumps(data, indent=4), f"Warned {user.display_name}")
             await interaction.response.send_message(f"Warned {user.display_name}", ephemeral=True)
     else:
-        if random.randint(1, 1000) == 1:
-            await interaction.response.send_message("no, take this instead", ephemeral=True)
-            await interaction.user.timeout(timedelta(days=random.randint(3, 60)))
-        else:
-            await interaction.response.send_message("You cannot warn that user", ephemeral=True)
+        await interaction.response.send_message("You cannot warn that user", ephemeral=True)
 
 @tree.command(name="active_dev_badge", description="Use this if you are a developer of the bot")
 async def active_dev_badge(interaction: discord.Interaction):
@@ -312,18 +306,14 @@ async def trap(interaction: discord.Interaction, user: discord.User):
             await user.add_roles(trapped_role)
             await interaction.response.send_message(f"{user.mention} has been trapped and cannot send messages.")
     else:
-        if random.randint(1, 1000) == 1:
-            await interaction.response.send_message("no, take this instead", ephemeral=True)
-            await interaction.user.timeout(timedelta(days=random.randint(3, 60)))
-        else:
-            await interaction.response.send_message("You don't have the Manage Roles permission to use this command.", ephemeral=True)
+        await interaction.response.send_message("You don't have the Manage Roles permission to use this command.", ephemeral=True)
 
-@tree.command(name="crucifix", description="Ban a user")
+@tree.command(name="ban", description="Ban a user")
 @app_commands.describe(user="The person to crucify")
 async def crucifix(interaction: discord.Interaction, user: discord.User):
     if interaction.user.guild_permissions.ban_members:
         await user.ban(reason=f'Crucified by {interaction.user.display_name}.')
-        await interaction.response.send_message(f"{user.display_name} has been sacrificed for our sins.")
+        await interaction.response.send_message(f"{user.display_name} has been BANNED")
     else:
         await interaction.response.send_message("You don't have permission to ban members.", ephemeral=True)
 
