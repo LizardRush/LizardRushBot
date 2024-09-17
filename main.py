@@ -309,7 +309,7 @@ async def trap(interaction: discord.Interaction, user: discord.User):
         await interaction.response.send_message("You don't have the Manage Roles permission to use this command.", ephemeral=True)
 
 @tree.command(name="ban", description="Ban a user")
-@app_commands.describe(user="The person to crucify")
+@app_commands.describe(user="The person to ban")
 async def crucifix(interaction: discord.Interaction, user: discord.User):
     if interaction.user.guild_permissions.ban_members:
         await user.ban(reason=f'Crucified by {interaction.user.display_name}.')
