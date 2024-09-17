@@ -209,14 +209,6 @@ async def on_ready():
 async def on_message(message):
     if message.author == client:
         return
-    if isinstance(message.channel, discord.DMChannel):
-        attachments = [attachment for attachment in message.attachments]
-        embed = discord.Embed(title=message.author.name)
-        embed.add_field(name="Message", value=message.content)
-        if len(attachments) >= 1:
-            embed.add_field(name="Attachments")
-        await owner.create_dm()
-        await owner.send(files=attachments, embed=embed)
     if client.user in message.mentions:
         await message.reply("hi.")
         
@@ -242,6 +234,8 @@ async def on_member_join(member: discord.Member):
     #     if role:
     #         await member.add_roles(role)
     #         await member.send(f'You have been granted the Admin rank in the server as you joined from te admin only server')
+
+
 
 # Setup hook for command tree
 async def setup_hook():
