@@ -251,7 +251,7 @@ async def give_coins(interaction: discord.Interaction, user: discord.User, amoun
     if interaction.user.guild_permissions.administrator:
         data = await get_stats(user)
         data["Coins"] += amount
-        post_file_to_github("LizardRush/LizardRushBot", f"stats/{user.id}_stats.json", json.dumps(data, indent=4))
+        post_file_to_github("LizardRush/LizardRushBot", f"stats/{user.id}_stats.json", json.dumps(data, indent=4), "ok")
         await interaction.response.send_message(f"Gave {amount} coins to {user.name}", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
