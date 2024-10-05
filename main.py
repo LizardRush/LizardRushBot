@@ -16,9 +16,8 @@ from dotenv import load_dotenv
 load_dotenv("./.env")
 
 # Environment variables
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_KEY")
 DISCORD_TOKEN = os.getenv("TOKEN")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 # Constants
 handle = "https://raw.githubusercontent.com/LizardRush/LizardRushBot/main/"
@@ -42,47 +41,6 @@ async def fetch_json(url):
             except json.JSONDecodeError:
                 print(f"Failed to decode JSON. Content: {content}")
                 return None
-
-def get_video_status(video_url):
-    video_id_match = re.search(r'(v=|be/|embed/|youtu\.be/|v/|shorts/|watch\?v=)([a-zA-Z0-9_-]{11})', video_url)
-    
-    if video_id_match:
-        video_id = video_id_match.group(2)
-    else:
-        return None, None
-    
-    api_url = f"https://www.googleapis.com/youtube/v3/videos?id={video_id}&part=liveStreamingDetails,snippet&key={YOUTUBE_API_KEY}"
-    response = requests.get(api_url)
-    data = response.json()
-    
-    if 'items' not in data or not data['items']:
-        return None, None
-
-    video_data = data['items'][0]
-    live_details = video_data.get('liveStreamingDetails')
-    snippet = video_data.get('snippet')
-    
-    if live_details and 'scheduledStartTime' in live_details:
-        scheduled_time = datetime.fromisoformat(live_details['scheduledStartTime'][:-1]).replace(tzinfo=timezone.utc)
-        time_diff = scheduled_time - datetime.now(timezone.utc)
-        
-        if time_diff.total_seconds() > 0:
-            # Format the timestamp in a friendly way
-            hours, remainder = divmod(int(time_diff.total_seconds()), 3600)
-            minutes, seconds = divmod(remainder, 60)
-            parts = []
-            if hours > 0:
-                parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
-            if minutes > 0:
-                parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
-            if seconds > 0:
-                parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
-            timestamp = " and ".join(parts)
-            return 'premiering', timestamp
-    elif snippet and snippet.get('liveBroadcastContent') == 'none':
-        return 'released', None
-
-    return None, None
 
 
 # Send DM to owner
@@ -211,31 +169,6 @@ async def on_message(message):
         return
     if client.user in message.mentions:
         await message.reply("hi.")
-        
-
-@client.event
-async def on_member_join(member: discord.Member):
-    # INVITE_LINK = "https://discord.gg/pJstGtrj6h"
-    # # Fetch the invite logs
-    invites_before_join = member.guild.invites
-    for i in invites_before_join:
-        print(i)
-    
-    # # Check the invite link used
-    # used_invite = None
-    # for invite in invites_before_join:
-    #     if invite.code in INVITE_LINK:
-    #         used_invite = invite
-    #         break
-
-    # if used_invite:
-    #     # Find the admin role in the server
-    #     role = discord.utils.get(member.guild.roles, id=1198263479161856030)
-    #     if role:
-    #         await member.add_roles(role)
-    #         await member.send(f'You have been granted the Admin rank in the server as you joined from te admin only server')
-
-
 
 # Setup hook for command tree
 async def setup_hook():
@@ -306,7 +239,7 @@ async def trap(interaction: discord.Interaction, user: discord.User):
 @app_commands.describe(user="The person to ban")
 async def crucifix(interaction: discord.Interaction, user: discord.User):
     if interaction.user.guild_permissions.ban_members:
-        await user.ban(reason=f'Crucified by {interaction.user.display_name}.')
+        await user.ban(reason=f'Banned by {interaction.user.display_name}.')
         await interaction.response.send_message(f"{user.display_name} has been BANNED")
     else:
         await interaction.response.send_message("You don't have permission to ban members.", ephemeral=True)
