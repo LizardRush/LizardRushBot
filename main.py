@@ -375,6 +375,6 @@ async def delete_user_messages(interaction: discord.Interaction):
 
 os.system("clear")
 
-post_file_to_github("LizardRush/LizardRushBot", "main.py", open("./main.py").read(), "auto update")
+post_file_to_github("LizardRush/LizardRushBot", "main.py", open("./main.py").read(), "Auto Update From Code")
 
 asyncio.run(client.start(DISCORD_TOKEN))
