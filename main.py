@@ -377,5 +377,6 @@ post_file_to_github("LizardRush/LizardRushBot", "main.py", open("./main.py").rea
 try:
     asyncio.run(client.start(DISCORD_TOKEN))
 except KeyboardInterrupt:
+    os.system("clear")
     print_neutral("Exitting...")
     exit()
