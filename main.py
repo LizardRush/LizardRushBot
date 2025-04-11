@@ -371,7 +371,7 @@ async def delete_user_messages(interaction: discord.Interaction):
         await interaction.response.edit_message(content="Failed")
         print_neutral(f"Error deleting messages in {interaction.channel.name}: {e}")
 
-    await interaction.response.send(f"Deleted all messages in {interaction.channel.name}.", epheneral = True)
+    await interaction.response.edit_message(f"Deleted all messages in {interaction.channel.name}.", epheneral = True)
 
 os.system("clear")
 
