@@ -371,10 +371,11 @@ async def delete_user_messages(interaction: discord.Interaction):
         await interaction.response.edit_message(content="Failed")
         print_neutral(f"Error deleting messages in {interaction.channel.name}: {e}")
 
-    await interaction.response.edit_message(f"Deleted all messages in {interaction.channel.name}.", epheneral = True)
-
 os.system("clear")
 
 post_file_to_github("LizardRush/LizardRushBot", "main.py", open("./main.py").read(), "Auto Update From Code")
-
-asyncio.run(client.start(DISCORD_TOKEN))
+try:
+    asyncio.run(client.start(DISCORD_TOKEN))
+except KeyboardInterrupt:
+    print_neutral("Exitting...")
+    exit()
