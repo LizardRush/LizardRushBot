@@ -38,8 +38,6 @@ GITHUB_TOKEN = os.getenv("GITHUB")
 
 # Constants
 handle = "https://raw.githubusercontent.com/LizardRush/LizardRushBot/main/"
-prefix = '!'
-doors_prefix = "#"
 hidden_command_channels = []
 voice_client = None
 
